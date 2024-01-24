@@ -2,6 +2,12 @@ export default [
   {
     path: '/',
     component: () => import('../Global/layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('./pages/IndexPage.vue') }],
+    children: [
+      {
+        name: 'index',
+        path: '',
+        component: () => import('./pages/IndexPage.vue'),
+      },
+    ],
   },
 ];
