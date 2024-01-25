@@ -1,6 +1,7 @@
 <template>
-  <q-page padding>
-    <div class="q-pa-md flex flex-center">
+  <q-page>
+    <board-list v-if="isAuthenticated" />
+    <div class="q-pa-md flex flex-center" v-else>
       <div class="container text-center">
         <h1 class="text-h4">Welcome to a demo board manager app built with</h1>
         <div class="row flex-center">
@@ -21,5 +22,11 @@
 </template>
 
 <script setup lang="ts">
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/features/Auth/stores/user';
 import quasarLogoUrl from '@/assets/images/logos/quasar.svg';
+import BoardList from '@/features/Boards/components/BoardList.vue';
+
+const userStore = useUserStore();
+const { isAuthenticated } = storeToRefs(userStore);
 </script>

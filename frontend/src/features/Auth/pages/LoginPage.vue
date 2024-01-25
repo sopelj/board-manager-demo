@@ -6,15 +6,16 @@
         <q-input
           v-model="username"
           label="Username *"
+          autocapitalize="off"
           lazy-rules
-          :rules="[requiredStringRule]"
+          :rules="[checkRequiredString]"
         />
         <q-input
           v-model="password"
           label="Password *"
           :type="isPasswordVisible ? 'password' : 'text'"
           lazy-rules
-          :rules="[requiredStringRule]"
+          :rules="[checkRequiredString]"
         >
           <template v-slot:append>
             <q-icon
@@ -42,6 +43,7 @@ import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
+import { checkRequiredString } from '@/features/Global/validation';
 
 const $q = useQuasar();
 const router = useRouter();
@@ -51,9 +53,6 @@ const userStore = useUserStore();
 const username = ref(null);
 const password = ref(null);
 const isPasswordVisible = ref(false);
-
-const requiredStringRule = (val: string | null) =>
-  (val && val.length > 0) || 'Cannot be empty';
 
 const handleLogin = () => {
   // TODO: Actual login login when backend is created.

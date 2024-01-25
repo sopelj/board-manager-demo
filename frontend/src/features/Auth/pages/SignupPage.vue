@@ -6,28 +6,29 @@
         <q-input
           v-model="username"
           label="Username *"
+          autocapitalize="off"
           lazy-rules
-          :rules="[checkRequired]"
+          :rules="[checkRequiredString]"
         />
         <q-input
           v-model="displayName"
           label="Display Name *"
           lazy-rules
-          :rules="[checkRequired]"
+          :rules="[checkRequiredString]"
         />
         <q-input
           v-model="email"
           label="Email *"
           lazy-rules
           type="email"
-          :rules="[checkRequired, checkEmail]"
+          :rules="[checkRequiredString, checkEmail]"
         />
         <q-input
           v-model="password"
           label="Password *"
           :type="isPasswordVisible ? 'password' : 'text'"
           lazy-rules
-          :rules="[checkRequired]"
+          :rules="[checkRequiredString]"
         >
           <template v-slot:append>
             <q-icon
@@ -42,7 +43,7 @@
           label="Confirm Password *"
           :type="isPasswordVisible ? 'password' : 'text'"
           lazy-rules
-          :rules="[checkRequired, checkPasswordConfirmation]"
+          :rules="[checkRequiredString, checkPasswordConfirmation]"
         />
         <div class="row flex-center">
           <q-btn
@@ -60,8 +61,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useQuasar } from 'quasar';
-
 import { useRouter } from 'vue-router';
+import { checkRequiredString, checkEmail } from '@/features/Global/validation';
+
 const $q = useQuasar();
 const router = useRouter();
 
@@ -72,10 +74,6 @@ const password = ref(null);
 const confirmPassword = ref(null);
 const isPasswordVisible = ref(false);
 
-const checkRequired = (val: string | null) =>
-  (val && val.length > 0) || 'Cannot be empty';
-const checkEmail = (val: string) =>
-  /(.+)@(.+){2,}\.(.+){2,}/.test(val) || 'Invalid email address';
 const checkPasswordConfirmation = (val: string | null) =>
   val === password.value || 'Passwords do not match';
 
