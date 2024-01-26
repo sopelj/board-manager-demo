@@ -1,3 +1,41 @@
+<script setup lang="ts">
+import { computed, nextTick, onMounted, ref } from 'vue';
+import { checkRequiredString } from '@/features/Global/validation';
+import {
+  defaultBackgroundUrl,
+  useBoardStore,
+} from '@/features/Boards/stores/boards';
+import { vClickOutside } from '@/features/Global/directives/click-outside';
+import type { QField, QForm } from 'quasar';
+
+const boardStore = useBoardStore();
+const morphState = ref('btn');
+const formRef = ref<QForm | null>(null);
+const formFields = ref<QField[]>([]);
+const boardName = ref<string>('');
+const backgroundUrl = ref(defaultBackgroundUrl);
+
+const handleSubmit = () => {
+  boardStore.addBoard(boardName.value, backgroundUrl.value);
+  closeForm();
+};
+
+const closeForm = () => {
+  morphState.value = 'btn';
+  boardName.value = '';
+  backgroundUrl.value = defaultBackgroundUrl;
+  formRef.value?.reset();
+};
+
+onMounted(async () => {
+  await nextTick();
+  formFields.value = formRef.value?.getValidationComponents() as QField[];
+});
+const formHasErrors = computed(() =>
+  formFields.value.some((v) => v.hasError || !v.modelValue)
+);
+</script>
+
 <template>
   <div class="flex column">
     <q-btn
@@ -37,44 +75,6 @@
     </q-card>
   </div>
 </template>
-
-<script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue';
-import { checkRequiredString } from '@/features/Global/validation';
-import {
-  defaultBackgroundUrl,
-  useBoardStore,
-} from '@/features/Boards/stores/boards';
-import { vClickOutside } from '@/features/Global/directives/click-outside';
-import type { QField, QForm } from 'quasar';
-
-const boardStore = useBoardStore();
-const morphState = ref('btn');
-const formRef = ref<QForm | null>(null);
-const formFields = ref<QField[]>([]);
-const boardName = ref<string>('');
-const backgroundUrl = ref(defaultBackgroundUrl);
-
-const handleSubmit = () => {
-  boardStore.addBoard(boardName.value, backgroundUrl.value);
-  closeForm();
-};
-
-const closeForm = () => {
-  morphState.value = 'btn';
-  boardName.value = '';
-  backgroundUrl.value = defaultBackgroundUrl;
-  formRef.value?.reset();
-};
-
-onMounted(async () => {
-  await nextTick();
-  formFields.value = formRef.value?.getValidationComponents() as QField[];
-});
-const formHasErrors = computed(() =>
-  formFields.value.some((v) => v.hasError || !v.modelValue)
-);
-</script>
 
 <style scoped>
 .text-btn:hover {

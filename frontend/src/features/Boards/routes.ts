@@ -6,7 +6,7 @@ export default [
       {
         name: 'board',
         path: ':id',
-        component: () => import('./pages/BoardPage.vue'),
+        component: () => import('./components/BoardPage.vue'),
       },
     ],
   },

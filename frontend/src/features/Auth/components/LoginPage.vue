@@ -1,3 +1,35 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useQuasar } from 'quasar';
+import { useRoute, useRouter } from 'vue-router';
+import { useUserStore } from '../stores/user';
+import { checkRequiredString } from '@/features/Global/validation';
+
+const $q = useQuasar();
+const router = useRouter();
+const route = useRoute();
+const userStore = useUserStore();
+
+const username = ref(null);
+const password = ref(null);
+const isPasswordVisible = ref(false);
+
+const handleLogin = () => {
+  // TODO: Actual login login when backend is created.
+  $q.notify({
+    color: 'green-4',
+    textColor: 'white',
+    icon: 'login',
+    message: 'Logged in!',
+  });
+  userStore.user = userStore.getUserById(1);
+  const nextPage = route.query.next;
+  router.push(
+    (nextPage instanceof Array ? nextPage[0] : nextPage) || { name: 'index' }
+  );
+};
+</script>
+
 <template>
   <q-page padding class="flex flex-center row">
     <div class="col col-xs-12 col-sm-6 col-md-4" style="max-width: 450px">
@@ -37,35 +69,3 @@
     </div>
   </q-page>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue';
-import { useQuasar } from 'quasar';
-import { useRoute, useRouter } from 'vue-router';
-import { useUserStore } from '../stores/user';
-import { checkRequiredString } from '@/features/Global/validation';
-
-const $q = useQuasar();
-const router = useRouter();
-const route = useRoute();
-const userStore = useUserStore();
-
-const username = ref(null);
-const password = ref(null);
-const isPasswordVisible = ref(false);
-
-const handleLogin = () => {
-  // TODO: Actual login login when backend is created.
-  $q.notify({
-    color: 'green-4',
-    textColor: 'white',
-    icon: 'login',
-    message: 'Logged in!',
-  });
-  userStore.user = userStore.getUserById(1);
-  const nextPage = route.query.next;
-  router.push(
-    (nextPage instanceof Array ? nextPage[0] : nextPage) || { name: 'index' }
-  );
-};
-</script>
