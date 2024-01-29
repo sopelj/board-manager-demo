@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { QForm } from 'quasar';
 import type { ComponentPublicInstance } from 'vue';
-import type { List } from '../types';
+import type { Card, List } from '../types';
 
 import { storeToRefs } from 'pinia';
 import { colors } from 'quasar';
@@ -23,15 +23,16 @@ const userStore = useUserStore();
 const cardStore = useCardStore();
 const listStore = useListStore();
 
-const { getUserById } = storeToRefs(userStore);
+const { users } = storeToRefs(userStore);
 const { getCardsByListId } = storeToRefs(cardStore);
 
 const addFormRef = ref<QForm>();
 const addFormBtnRef = ref<ComponentPublicInstance<typeof AddButtonCard>>();
 const newListName = ref<string>('');
+const dragOverActive = ref<boolean>(false);
 
 const headerStyle = computed(() => {
-  const bgColor = props.list.color;
+  const bgColor = dragOverActive.value ? '#00ffae' : props.list.color;
   const textColor = colors.luminosity(bgColor) >= 0.5 ? 'black' : 'white';
   return `background-color: ${bgColor}; color: ${textColor}`;
 });
@@ -45,8 +46,10 @@ const listColor = computed({
   },
 });
 const owner = computed((): User | undefined =>
-  getUserById.value(props.list.ownerId)
+  users.value.get(props.list.ownerId)
 );
+const listCards = computed((): Card[] => getCardsByListId.value(props.list.id));
+
 const addCard = () => {
   cardStore.addCard(newListName.value as string, props.list.id);
   resetAddCard();
@@ -56,10 +59,43 @@ const resetAddCard = () => {
   newListName.value = '';
   addFormRef.value?.reset();
 };
+
+const startDrag = (event: DragEvent, cardId: string) => {
+  if (event.dataTransfer !== null) {
+    event.dataTransfer.setData('text/plain', cardId.toString());
+    event.dataTransfer.dropEffect = 'move';
+  }
+};
+const onDragDrop = (event: DragEvent) => {
+  const cardId = event?.dataTransfer?.getData('text/plain');
+  if (cardId && !listCards.value.find((c) => c.id === cardId)) {
+    const card = cardStore.cards.get(cardId);
+    if (card) {
+      cardStore.cards.set(card.id, {
+        ...card,
+        listId: props.list.id,
+      });
+      dragOverActive.value = false;
+    }
+  }
+};
+
+const onDragEnter = (event: DragEvent) => {
+  const cardId = event?.dataTransfer?.getData('text/plain');
+  if (cardId && !listCards.value.find((c) => c.id === cardId)) {
+    event.preventDefault();
+    dragOverActive.value = true;
+  }
+};
 </script>
 
 <template>
-  <q-card>
+  <q-card
+    @drop="onDragDrop"
+    @dragenter.prevent
+    @dragover="onDragEnter"
+    @dragleave="dragOverActive = false"
+  >
     <q-card-section :style="headerStyle">
       <div class="flex row">
         <div class="text-h5 col">{{ list.name }}</div>
@@ -114,6 +150,8 @@ const resetAddCard = () => {
         v-for="card in getCardsByListId(list.id)"
         :key="card.id"
         class="q-mb-sm q-ma-sm"
+        draggable="true"
+        @dragstart="startDrag($event, card.id)"
       >
         <q-card-section class="q-pa-sm">
           {{ card.content }}

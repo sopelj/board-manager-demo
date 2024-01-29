@@ -5,9 +5,9 @@ import { vClickOutside } from '@/features/Global/directives/click-outside';
 const props = defineProps<{ buttonLabel: string; buttonId: string }>();
 const emit = defineEmits(['close', 'open']);
 
-const morphGroup = computed(() => `add-form-btn-${props.buttonId}`);
-const cardMorphId = computed(() => `card-${props.buttonId}`);
-const btnMorphId = computed(() => `btn-${props.buttonId}`);
+const morphGroup = computed((): string => `add-form-btn-${props.buttonId}`);
+const cardMorphId = computed((): string => `card-${props.buttonId}`);
+const btnMorphId = computed((): string => `btn-${props.buttonId}`);
 const morphState = ref<string>(btnMorphId.value);
 
 const open = (): void => {
@@ -24,12 +24,12 @@ defineExpose({ close });
 </script>
 
 <template>
-  <div class="flex">
+  <div>
     <q-btn
       flat
       no-caps
       align="left"
-      class="col text-btn bg-grey-2 text-grey-6 text-weight-regular"
+      class="width-100 col text-btn bg-grey-2 text-grey-6 text-weight-regular text-transition"
       :id="buttonId"
       @click="open"
       v-morph:[`${btnMorphId}:${morphGroup}:300`]="morphState"
@@ -39,7 +39,7 @@ defineExpose({ close });
     <q-card
       v-morph:[`${cardMorphId}:${morphGroup}:300`]="morphState"
       v-click-outside:[buttonId]="close"
-      class="col"
+      class="width-100 col"
     >
       <q-card-section>
         <slot />

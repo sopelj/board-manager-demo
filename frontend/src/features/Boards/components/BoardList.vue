@@ -14,10 +14,10 @@ const { boards } = storeToRefs(boardStore);
   <div class="q-pa-md row items-start q-gutter-md">
     <board-card
       class="col-1 col-md-2 col-sm-3 col-xs-12 cursor-pointer"
-      v-for="board in boards"
+      v-for="[boardId, board] in boards"
       :board="board"
-      :key="board.id"
-      @click="router.push({ name: 'board', params: { id: board.id } })"
+      :key="boardId"
+      @click="router.push({ name: 'board', params: { id: boardId } })"
     />
     <add-board-form class="col-1 col-md-2 col-sm-3 col-xs-12" />
   </div>

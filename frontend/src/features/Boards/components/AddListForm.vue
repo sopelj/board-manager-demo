@@ -4,7 +4,7 @@ import { checkRequiredString } from '@/features/Global/validation';
 import { useListStore, defaultColor } from '../stores/lists';
 import AddButtonCard from '@/features/Global/components/AddButtonCard.vue';
 
-const props = defineProps<{ boardId: number }>();
+const props = defineProps<{ boardId: string }>();
 
 const listStore = useListStore();
 const addFormRef = ref<InstanceType<typeof AddButtonCard>>();

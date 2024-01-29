@@ -23,7 +23,7 @@ const handleLogin = () => {
     icon: 'login',
     message: 'Logged in!',
   });
-  userStore.user = userStore.getUserById(1);
+  userStore.user = userStore.users.get('9d4dd4b8-47f9-4cfd-98f4-bba4fc27f545');
   const nextPage = route.query.next;
   router.push(
     (nextPage instanceof Array ? nextPage[0] : nextPage) || { name: 'index' }

@@ -11,11 +11,11 @@ const route = useRoute();
 const boardStore = useBoardStore();
 const listStore = useListStore();
 
-const { getBoardById } = storeToRefs(boardStore);
+const { boards } = storeToRefs(boardStore);
 const { getListsByBoardId } = storeToRefs(listStore);
 
-const boardId = parseInt(route.params.id as string);
-const board = getBoardById.value(boardId);
+const boardId = route.params.id as string;
+const board = boards.value.get(boardId);
 </script>
 
 <template>

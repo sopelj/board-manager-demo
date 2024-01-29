@@ -1,22 +1,22 @@
 export interface Board {
-  id: number;
+  id: string;
   name: string;
-  ownerId: number;
+  ownerId: string;
   backgroundUrl: string;
   created: Date;
 }
 
 export interface List {
-  id: number;
-  boardId: number;
+  id: string;
+  boardId: string;
   name: string;
   color: string;
-  ownerId: number;
+  ownerId: string;
   created: Date;
 }
 
 export interface Card {
-  id: number;
-  listId: number;
+  id: string;
+  listId: string;
   content: string;
 }
