@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useQuasar } from 'quasar';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { checkRequiredString, checkEmail } from '@/features/Global/validation';
 
 const $q = useQuasar();
 const router = useRouter();
 
-const email = ref(null);
-const displayName = ref(null);
-const username = ref(null);
-const password = ref(null);
-const confirmPassword = ref(null);
-const isPasswordVisible = ref(false);
+const email = ref<string>('');
+const displayName = ref<string>('');
+const username = ref<string>('');
+const password = ref<string>('');
+const confirmPassword = ref<string>('');
+const isPasswordVisible = ref<boolean>(false);
 
 const checkPasswordConfirmation = (val: string | null) =>
   val === password.value || 'Passwords do not match';

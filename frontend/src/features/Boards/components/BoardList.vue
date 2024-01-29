@@ -2,7 +2,7 @@
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useBoardStore } from '../stores/boards';
-import AddBoard from './AddBoard.vue';
+import AddBoardForm from './AddBoardForm.vue';
 import BoardCard from './BoardCard.vue';
 
 const router = useRouter();
@@ -19,6 +19,6 @@ const { boards } = storeToRefs(boardStore);
       :key="board.id"
       @click="router.push({ name: 'board', params: { id: board.id } })"
     />
-    <add-board class="col-1 col-md-2 col-sm-3 col-xs-12" />
+    <add-board-form class="col-1 col-md-2 col-sm-3 col-xs-12" />
   </div>
 </template>

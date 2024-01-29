@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useQuasar } from 'quasar';
+import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 import { useUserStore } from '../stores/user';
 import { checkRequiredString } from '@/features/Global/validation';
 
@@ -10,9 +11,9 @@ const router = useRouter();
 const route = useRoute();
 const userStore = useUserStore();
 
-const username = ref(null);
-const password = ref(null);
-const isPasswordVisible = ref(false);
+const username = ref<string>('');
+const password = ref<string>('');
+const isPasswordVisible = ref<boolean>(false);
 
 const handleLogin = () => {
   // TODO: Actual login login when backend is created.

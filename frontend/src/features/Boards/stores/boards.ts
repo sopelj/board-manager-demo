@@ -1,5 +1,5 @@
+import type { Board } from '../types';
 import { defineStore } from 'pinia';
-import { Board } from '../types';
 import { useUserStore } from '@/features/Auth/stores/user';
 
 export const defaultBackgroundUrl =
