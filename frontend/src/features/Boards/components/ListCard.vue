@@ -90,88 +90,101 @@ const onDragEnter = (event: DragEvent) => {
 </script>
 
 <template>
-  <q-card
-    @drop="onDragDrop"
-    @dragenter.prevent
-    @dragover="onDragEnter"
-    @dragleave="dragOverActive = false"
-  >
-    <q-card-section :style="headerStyle">
-      <div class="flex row">
-        <div class="text-h5 col">{{ list.name }}</div>
-        <q-btn flat dense icon="more_horiz" class="col-1">
-          <q-menu anchor="top right" self="top left">
-            <q-list style="min-width: 100px">
-              <q-item>
-                <user-avatar :user="owner" />
-                <q-item-section class="q-ml-sm">
-                  {{ owner?.displayName }}
-                  <div class="text-grey-7">
-                    {{ formatTimeSince(list.created) }}
-                  </div>
-                </q-item-section>
-              </q-item>
-              <q-item class="q-pa-none">
-                <q-btn class="full-width bg-grey-4">
-                  Background Colour
-                  <q-icon
-                    name="format_color_fill"
-                    class="cursor-pointer q-pl-sm"
-                  />
-                  <q-popup-proxy
-                    right
-                    transition-show="scale"
-                    transition-hide="scale"
-                  >
-                    <q-color v-model="listColor" />
-                  </q-popup-proxy>
-                </q-btn>
-              </q-item>
-              <q-item>
-                <q-item-section>
-                  <q-btn
-                    icon="remove_circle"
-                    flat
-                    color="red"
-                    align="right"
-                    @click="listStore.deleteList(list.id)"
-                  >
-                    Delete List
+  <div>
+    <q-card
+      @drop="onDragDrop"
+      @dragenter.prevent
+      @dragover="onDragEnter"
+      @dragleave="dragOverActive = false"
+    >
+      <q-card-section :style="headerStyle" class="q-pa-sm">
+        <div class="flex row items-center">
+          <div class="text-h7 col">{{ list.name }}</div>
+          <q-btn flat dense icon="more_horiz" class="q-pa-none">
+            <q-menu anchor="top right" self="top left">
+              <q-list style="min-width: 100px">
+                <q-item>
+                  <user-avatar :user="owner" />
+                  <q-item-section class="q-ml-sm">
+                    {{ owner?.displayName }}
+                    <div class="text-grey-7">
+                      {{ formatTimeSince(list.created) }}
+                    </div>
+                  </q-item-section>
+                </q-item>
+                <q-item class="q-pa-none">
+                  <q-btn class="full-width bg-grey-4">
+                    Background Colour
+                    <q-icon
+                      name="format_color_fill"
+                      class="cursor-pointer q-pl-sm"
+                    />
+                    <q-popup-proxy
+                      right
+                      transition-show="scale"
+                      transition-hide="scale"
+                    >
+                      <q-color v-model="listColor" />
+                    </q-popup-proxy>
                   </q-btn>
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-menu>
-        </q-btn>
-      </div>
-    </q-card-section>
-    <q-card-section class="q-pa-none">
-      <q-card
-        v-for="card in getCardsByListId(list.id)"
-        :key="card.id"
-        class="q-mb-sm q-ma-sm"
-        draggable="true"
-        @dragstart="startDrag($event, card.id)"
-      >
-        <q-card-section class="q-pa-sm">
-          {{ card.content }}
-        </q-card-section>
-      </q-card>
-      <add-button-card
-        button-label="Add card"
-        :button-id="`add-card-button-list-${list.id}`"
-        ref="addFormBtnRef"
-        @close="resetAddCard"
-      >
-        <q-form @submit="addCard" ref="addFormRef" class="row q-gutter-md">
-          <q-input
-            v-model="newListName"
-            class="col"
-            :rules="[checkRequiredString]"
-          />
-          <q-btn flat icon="save" type="submit" :disable="newListName === ''" />
-        </q-form>
-      </add-button-card>
-    </q-card-section>
-  </q-card>
+                </q-item>
+                <q-item>
+                  <q-item-section>
+                    <q-btn
+                      icon="remove_circle"
+                      flat
+                      color="red"
+                      align="right"
+                      @click="listStore.deleteList(list.id)"
+                    >
+                      Delete List
+                    </q-btn>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
+          </q-btn>
+        </div>
+      </q-card-section>
+      <q-card-section class="q-pa-none">
+        <q-card
+          v-for="card in getCardsByListId(list.id)"
+          :key="card.id"
+          class="q-mb-sm q-ma-sm"
+          draggable="true"
+          @dragstart="startDrag($event, card.id)"
+        >
+          <q-card-section class="q-pa-sm">
+            {{ card.content }}
+          </q-card-section>
+        </q-card>
+        <add-button-card
+          button-label="Add card"
+          :button-id="`add-card-button-list-${list.id}`"
+          :padding="false"
+          ref="addFormBtnRef"
+          @close="resetAddCard"
+        >
+          <q-form
+            @submit="addCard"
+            ref="addFormRef"
+            class="row items-center shadow-1 q-px-sm q-pb-sm"
+          >
+            <q-input
+              v-model="newListName"
+              class="col"
+              :rules="[checkRequiredString]"
+            />
+            <q-btn
+              flat
+              icon="save"
+              type="submit"
+              class="q-pa-none q-ml-sm"
+              :disable="newListName === ''"
+            />
+          </q-form>
+        </add-button-card>
+      </q-card-section>
+    </q-card>
+  </div>
 </template>

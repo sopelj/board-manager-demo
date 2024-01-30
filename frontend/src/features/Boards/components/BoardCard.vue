@@ -22,32 +22,34 @@ const ownerName = computed(() =>
 </script>
 
 <template>
-  <q-card>
-    <q-img :src="board.backgroundUrl">
-      <div class="absolute-top text-h6 bg-transparent">
-        {{ board.name }}
-      </div>
-    </q-img>
-    <q-card-section class="q-pa-sm row vertical-middle">
-      <div class="col flex items-center vertical-middle">
-        <user-avatar
-          :user="owner"
-          :size="20"
-          style="font-size: 1.5em"
-          class="q-mr-sm"
+  <div>
+    <q-card>
+      <q-img :src="board.backgroundUrl">
+        <div class="absolute-top text-h6 bg-transparent">
+          {{ board.name }}
+        </div>
+      </q-img>
+      <q-card-section class="q-pa-sm row vertical-middle">
+        <div class="col flex items-center vertical-middle">
+          <user-avatar
+            :user="owner"
+            :size="20"
+            style="font-size: 1.5em"
+            class="q-mr-sm"
+          />
+          <span class="owner">{{ ownerName || 'unknown' }}</span>
+          <span>{{ formatTimeSince(board.created) }}</span>
+        </div>
+        <q-btn
+          flat
+          round
+          color="red"
+          icon="delete"
+          @click.stop="boardStore.boards.delete(props.board.id)"
         />
-        <span class="owner">{{ ownerName || 'unknown' }}</span>
-        <span>{{ formatTimeSince(board.created) }}</span>
-      </div>
-      <q-btn
-        flat
-        round
-        color="red"
-        icon="delete"
-        @click.stop="boardStore.boards.delete(props.board.id)"
-      />
-    </q-card-section>
-  </q-card>
+      </q-card-section>
+    </q-card>
+  </div>
 </template>
 
 <style scoped>

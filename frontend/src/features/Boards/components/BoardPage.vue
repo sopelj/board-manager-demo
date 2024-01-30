@@ -34,7 +34,7 @@ const board = boards.value.get(boardId);
         : ''
     "
   >
-    <div class="q-pa-md row items-start q-gutter-md">
+    <div class="row items-start q-col-gutter-md">
       <list-card
         class="col-1 col-md-2 col-sm-3 col-xs-12"
         v-for="list in getListsByBoardId(boardId)"

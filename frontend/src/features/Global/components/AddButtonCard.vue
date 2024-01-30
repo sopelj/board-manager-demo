@@ -2,7 +2,10 @@
 import { computed, ref } from 'vue';
 import { vClickOutside } from '@/features/Global/directives/click-outside';
 
-const props = defineProps<{ buttonLabel: string; buttonId: string }>();
+const props = withDefaults(
+  defineProps<{ buttonLabel: string; buttonId: string; padding: boolean }>(),
+  { padding: true }
+);
 const emit = defineEmits(['close', 'open']);
 
 const morphGroup = computed((): string => `add-form-btn-${props.buttonId}`);
@@ -41,7 +44,7 @@ defineExpose({ close });
       v-click-outside:[buttonId]="close"
       class="width-100 col"
     >
-      <q-card-section>
+      <q-card-section :class="padding ? '' : 'no-padding'">
         <slot />
       </q-card-section>
     </q-card>
