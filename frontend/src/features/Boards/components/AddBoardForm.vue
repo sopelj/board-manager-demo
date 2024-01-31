@@ -17,7 +17,6 @@ const backgroundUrl = ref<string>(defaultBackgroundUrl);
 const handleSubmit = () => {
   boardStore.addBoard(boardName.value, backgroundUrl.value);
   addButtonRef.value?.close();
-  closeForm();
 };
 
 const closeForm = () => {

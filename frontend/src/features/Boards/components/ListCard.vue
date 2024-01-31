@@ -53,8 +53,8 @@ const listCards = computed((): Card[] => getCardsByListId.value(props.list.id));
 const addCard = () => {
   cardStore.addCard(newListName.value as string, props.list.id);
   resetAddCard();
-  addFormBtnRef.value?.close();
 };
+
 const resetAddCard = () => {
   newListName.value = '';
   addFormRef.value?.reset();

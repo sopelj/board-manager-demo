@@ -46,13 +46,13 @@ const handleLogin = () => {
         <q-input
           v-model="password"
           label="Password *"
-          :type="isPasswordVisible ? 'password' : 'text'"
+          :type="isPasswordVisible ? 'text' : 'password'"
           lazy-rules
           :rules="[checkRequiredString]"
         >
           <template v-slot:append>
             <q-icon
-              :name="isPasswordVisible ? 'visibility_off' : 'visibility'"
+              :name="isPasswordVisible ? 'visibility' : 'visibility_off'"
               class="cursor-pointer"
               @click="isPasswordVisible = !isPasswordVisible"
             />
