@@ -1,3 +1,34 @@
+<script setup lang="ts">
+import { useQuasar } from 'quasar';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { checkRequiredString, checkEmail } from '@/features/Global/validation';
+
+const $q = useQuasar();
+const router = useRouter();
+
+const email = ref<string>('');
+const displayName = ref<string>('');
+const username = ref<string>('');
+const password = ref<string>('');
+const confirmPassword = ref<string>('');
+const isPasswordVisible = ref<boolean>(false);
+
+const checkPasswordConfirmation = (val: string | null) =>
+  val === password.value || 'Passwords do not match';
+
+const handleSignup = () => {
+  // TODO: Actually create account when backend exists.
+  $q.notify({
+    color: 'green-4',
+    textColor: 'white',
+    icon: 'person_add',
+    message: 'Account created. Please login.',
+  });
+  router.push({ name: 'auth-login' });
+};
+</script>
+
 <template>
   <q-page padding class="flex flex-center row">
     <div class="col col-xs-12 col-sm-6 col-md-4" style="max-width: 450px">
@@ -26,13 +57,13 @@
         <q-input
           v-model="password"
           label="Password *"
-          :type="isPasswordVisible ? 'password' : 'text'"
+          :type="isPasswordVisible ? 'text' : 'password'"
           lazy-rules
           :rules="[checkRequiredString]"
         >
           <template v-slot:append>
             <q-icon
-              :name="isPasswordVisible ? 'visibility_off' : 'visibility'"
+              :name="isPasswordVisible ? 'visibility' : 'visibility_off'"
               class="cursor-pointer"
               @click="isPasswordVisible = !isPasswordVisible"
             />
@@ -41,7 +72,7 @@
         <q-input
           v-model="confirmPassword"
           label="Confirm Password *"
-          :type="isPasswordVisible ? 'password' : 'text'"
+          :type="isPasswordVisible ? 'text' : 'password'"
           lazy-rules
           :rules="[checkRequiredString, checkPasswordConfirmation]"
         />
@@ -57,34 +88,3 @@
     </div>
   </q-page>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue';
-import { useQuasar } from 'quasar';
-import { useRouter } from 'vue-router';
-import { checkRequiredString, checkEmail } from '@/features/Global/validation';
-
-const $q = useQuasar();
-const router = useRouter();
-
-const email = ref(null);
-const displayName = ref(null);
-const username = ref(null);
-const password = ref(null);
-const confirmPassword = ref(null);
-const isPasswordVisible = ref(false);
-
-const checkPasswordConfirmation = (val: string | null) =>
-  val === password.value || 'Passwords do not match';
-
-const handleSignup = () => {
-  // TODO: Actually create account when backend exists.
-  $q.notify({
-    color: 'green-4',
-    textColor: 'white',
-    icon: 'person_add',
-    message: 'Account created. Please login.',
-  });
-  router.push({ name: 'auth-login' });
-};
-</script>

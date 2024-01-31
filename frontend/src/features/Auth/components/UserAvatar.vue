@@ -1,10 +1,3 @@
-<template>
-  <q-avatar>
-    <img :src="avatarUrl" :alt="`${user.displayName}'s profile picture`" />
-    <slot />
-  </q-avatar>
-</template>
-
 <script setup lang="ts">
 import md5 from 'md5';
 import { computed } from 'vue';
@@ -18,3 +11,10 @@ const avatarUrl = computed<string>(() => {
   return `https://www.gravatar.com/avatar/${hash}?s=${props.size}`;
 });
 </script>
+
+<template>
+  <q-avatar>
+    <img :src="avatarUrl" :alt="`${user.displayName}'s profile picture`" />
+    <slot />
+  </q-avatar>
+</template>
