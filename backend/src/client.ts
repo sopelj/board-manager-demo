@@ -4,6 +4,9 @@ import type { TransportConnection, Application } from '@feathersjs/feathers';
 import authenticationClient from '@feathersjs/authentication-client';
 import type { AuthenticationClientOptions } from '@feathersjs/authentication-client';
 
+import { boardClient } from './services/boards/boards.shared';
+export type { Board, BoardData, BoardQuery, BoardPatch } from './services/boards/boards.shared';
+
 export interface Configuration {
   connection: TransportConnection<ServiceTypes>;
 }
@@ -29,5 +32,7 @@ export const createClient = <Configuration = any>(
   client.configure(connection);
   client.configure(authenticationClient(authenticationOptions));
   client.set('connection', connection);
+
+  client.configure(boardClient);
   return client;
 };

@@ -2,20 +2,19 @@
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 
-import { useBoardStore } from '../stores/boards';
 import { useListStore } from '../stores/lists';
 import ListCard from './ListCard.vue';
 import AddListForm from './AddListForm.vue';
+import { useFeathers } from '@/feathers-client';
+const { api } = useFeathers();
 
 const route = useRoute();
-const boardStore = useBoardStore();
 const listStore = useListStore();
 
-const { boards } = storeToRefs(boardStore);
 const { getListsByBoardId } = storeToRefs(listStore);
 
 const boardId = route.params.id as string;
-const board = boards.value.get(boardId);
+const { data: board } =  api.service('boards').useGet(boardId);
 </script>
 
 <template>

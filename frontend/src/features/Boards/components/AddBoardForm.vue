@@ -4,24 +4,26 @@ import type { ComponentPublicInstance } from 'vue';
 import { computed, nextTick, onMounted, ref } from 'vue';
 
 import { checkRequiredString } from '@/features/Global/validation';
-import { defaultBackgroundUrl, useBoardStore } from '../stores/boards';
 import AddButtonCard from '@/features/Global/components/AddButtonCard.vue';
+import { useFeathers } from '@/feathers-client';
 
-const boardStore = useBoardStore();
+const defaultBackgroundUrl = 'https://images.unsplash.com/photo-1544604860-206456f08229?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80';
+
+const { api } = useFeathers();
+const Board = api.service('boards');
+const newBoard = ref(Board.new({backgroundUrl: defaultBackgroundUrl}));
+
 const addButtonRef = ref<ComponentPublicInstance<typeof AddButtonCard>>();
 const formRef = ref<QForm>();
 const formFields = ref<QField[]>([]);
-const boardName = ref<string>('');
-const backgroundUrl = ref<string>(defaultBackgroundUrl);
 
 const handleSubmit = () => {
-  boardStore.addBoard(boardName.value, backgroundUrl.value);
+  newBoard.value.save()
   addButtonRef.value?.close();
 };
 
 const closeForm = () => {
-  boardName.value = '';
-  backgroundUrl.value = defaultBackgroundUrl;
+  newBoard.value = Board.new({backgroundUrl: defaultBackgroundUrl});
   formRef.value?.reset();
 };
 
@@ -44,13 +46,13 @@ const formHasErrors = computed(() =>
     >
       <q-form ref="formRef" @submit="handleSubmit">
         <q-input
-          v-model="boardName"
+          v-model="newBoard.name"
           label="Name"
           lazy-rules
           :rules="[checkRequiredString]"
         />
         <q-input
-          v-model="backgroundUrl"
+          v-model="newBoard.backgroundUrl"
           label="Background URL"
           lazy-rules
           :rules="[checkRequiredString]"
