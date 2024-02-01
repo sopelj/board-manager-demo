@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { Board } from '../types';
-
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 
@@ -8,7 +6,7 @@ import UserAvatar from '@/features/Auth/components/UserAvatar.vue';
 import { useUserStore } from '@/features/Auth/stores/user';
 import { formatTimeSince } from '@/features/Dates/datetime';
 import { useFeathers } from '@/feathers-client';
-const props = defineProps<{ board: Board }>();
+const props = defineProps<{ board }>();
 
 const { api } = useFeathers();
 const userStore = useUserStore();
@@ -23,7 +21,7 @@ const ownerName = computed(() =>
 <template>
   <div>
     <q-card>
-      <q-img :src="board.backgroundUrl" :ratio="4/3">
+      <q-img :src="board.backgroundUrl" :ratio="4 / 3">
         <div class="absolute-top text-h6 bg-transparent">
           {{ board.name }}
         </div>
@@ -44,7 +42,7 @@ const ownerName = computed(() =>
           round
           color="red"
           icon="delete"
-          @click.stop="api.service('boards').remove(props.board.id)"
+          @click.stop="api.service('boards').remove(props.board._id)"
         />
       </q-card-section>
     </q-card>

@@ -1,29 +1,30 @@
 <script setup lang="ts">
-import type { QField, QForm } from 'quasar';
-import type { ComponentPublicInstance } from 'vue';
+import type { QField, QForm, QInput } from 'quasar';
 import { computed, nextTick, onMounted, ref } from 'vue';
 
 import { checkRequiredString } from '@/features/Global/validation';
 import AddButtonCard from '@/features/Global/components/AddButtonCard.vue';
 import { useFeathers } from '@/feathers-client';
 
-const defaultBackgroundUrl = 'https://images.unsplash.com/photo-1544604860-206456f08229?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80';
+const defaultBackgroundUrl =
+  'https://images.unsplash.com/photo-1544604860-206456f08229?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80';
 
 const { api } = useFeathers();
 const Board = api.service('boards');
-const newBoard = ref(Board.new({backgroundUrl: defaultBackgroundUrl}));
+const newBoard = ref(Board.new({ backgroundUrl: defaultBackgroundUrl }));
 
-const addButtonRef = ref<ComponentPublicInstance<typeof AddButtonCard>>();
+const addButtonRef = ref<InstanceType<typeof AddButtonCard>>();
 const formRef = ref<QForm>();
+const nameInputRef = ref<QInput>();
 const formFields = ref<QField[]>([]);
 
 const handleSubmit = () => {
-  newBoard.value.save()
-  addButtonRef.value?.close();
+  newBoard.value.save();
+  nameInputRef.value?.focus();
 };
 
 const closeForm = () => {
-  newBoard.value = Board.new({backgroundUrl: defaultBackgroundUrl});
+  newBoard.value = Board.new({ backgroundUrl: defaultBackgroundUrl });
   formRef.value?.reset();
 };
 
@@ -46,6 +47,7 @@ const formHasErrors = computed(() =>
     >
       <q-form ref="formRef" @submit="handleSubmit">
         <q-input
+          ref="nameInputRef"
           v-model="newBoard.name"
           label="Name"
           lazy-rules

@@ -1,17 +1,26 @@
 <script setup lang="ts">
+import type { QInput } from 'quasar';
 import { ref } from 'vue';
 import { checkRequiredString } from '@/features/Global/validation';
-import { useListStore, defaultColor } from '../stores/lists';
 import AddButtonCard from '@/features/Global/components/AddButtonCard.vue';
+import { useFeathers } from '@/feathers-client';
 
 const props = defineProps<{ boardId: string }>();
 
-const listStore = useListStore();
+const { api } = useFeathers();
+const defaultColor = '#e0e0e0';
+
 const addFormRef = ref<InstanceType<typeof AddButtonCard>>();
-const listName = ref<string>('');
+const nameInputRef = ref<QInput>();
+
+const List = api.service('lists');
+const newList = ref(List.new({ color: defaultColor }));
+
 const handleSubmit = () => {
-  listStore.addList(listName.value, defaultColor, props.boardId);
-  addFormRef.value?.close();
+  newList.value.boardId = props.boardId;
+  newList.value.save();
+  newList.value = List.new({ color: defaultColor });
+  nameInputRef.value?.focus();
 };
 </script>
 
@@ -20,16 +29,17 @@ const handleSubmit = () => {
     button-label="Add List..."
     button-id="add-list-btn"
     ref="addFormRef"
-    @close="listName = ''"
+    @close="newList.name = ''"
   >
     <q-form @submit="handleSubmit">
       <q-input
-        v-model="listName"
+        ref="nameInputRef"
+        v-model="newList.name"
         label="Name"
         lazy-rules
         :rules="[checkRequiredString]"
       />
-      <q-btn type="submit" color="primary" :disabled="!listName"> Add </q-btn>
+      <q-btn type="submit" color="primary" :disabled="!newList.name">Add</q-btn>
     </q-form>
   </add-button-card>
 </template>

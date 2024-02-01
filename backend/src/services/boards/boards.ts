@@ -16,6 +16,7 @@ import {
 import type { Application } from '../../declarations';
 import { BoardService, getOptions } from './boards.class';
 import { boardPath, boardMethods } from './boards.shared';
+import { afterBoardRemove } from './boards.hooks';
 
 export * from './boards.class';
 export * from './boards.schema';
@@ -44,6 +45,7 @@ export const board = (app: Application) => {
     },
     after: {
       all: [],
+      remove: [afterBoardRemove],
     },
     error: {
       all: [],

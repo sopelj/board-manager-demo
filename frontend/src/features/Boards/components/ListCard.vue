@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import type { QForm } from 'quasar';
-import type { ComponentPublicInstance } from 'vue';
-import type { Card, List } from '../types';
 
 import { storeToRefs } from 'pinia';
 import { colors } from 'quasar';
@@ -10,25 +8,29 @@ import { computed, ref } from 'vue';
 import { checkRequiredString } from '@/features/Global/validation';
 import AddButtonCard from '@/features/Global/components/AddButtonCard.vue';
 
-import { useCardStore } from '../stores/cards';
-import { useListStore } from '../stores/lists';
 import UserAvatar from '@/features/Auth/components/UserAvatar.vue';
 import { useUserStore } from '@/features/Auth/stores/user';
 import { formatTimeSince } from '@/features/Dates/datetime';
 import { User } from '@/features/Auth/types';
-
-const props = defineProps<{ list: List }>();
+import { useFeathers } from '@/feathers-client';
 
 const userStore = useUserStore();
-const cardStore = useCardStore();
-const listStore = useListStore();
-
 const { users } = storeToRefs(userStore);
-const { getCardsByListId } = storeToRefs(cardStore);
+const { api } = useFeathers();
+
+const List = api.service('lists');
+const Card = api.service('cards');
+const props = defineProps<{ list }>();
+
+const newCard = ref(Card.new());
+const cardParams = computed(() => ({ query: { listId: props.list._id } }));
+const { allLocalData: cards, isPending } = Card.useFind(cardParams, {
+  paginateOn: 'hybrid',
+});
 
 const addFormRef = ref<QForm>();
-const addFormBtnRef = ref<ComponentPublicInstance<typeof AddButtonCard>>();
-const newListName = ref<string>('');
+const cardInputRef = ref();
+const addFormBtnRef = ref<InstanceType<typeof AddButtonCard>>();
 const dragOverActive = ref<boolean>(false);
 
 const headerStyle = computed(() => {
@@ -36,45 +38,41 @@ const headerStyle = computed(() => {
   const textColor = colors.luminosity(bgColor) >= 0.5 ? 'black' : 'white';
   return `background-color: ${bgColor}; color: ${textColor}`;
 });
+
 const listColor = computed({
   get: () => props.list.color,
   set: (val) => {
-    listStore.lists.set(props.list.id, {
-      ...props.list,
-      color: val,
-    });
+    List.patch(props.list._id, { color: val });
   },
 });
 const owner = computed((): User | undefined =>
   users.value.get(props.list.ownerId)
 );
-const listCards = computed((): Card[] => getCardsByListId.value(props.list.id));
 
 const addCard = () => {
-  cardStore.addCard(newListName.value as string, props.list.id);
+  newCard.value.listId = props.list._id;
+  newCard.value.save();
   resetAddCard();
+  cardInputRef.value.focus();
 };
 
 const resetAddCard = () => {
-  newListName.value = '';
+  newCard.value = Card.new();
   addFormRef.value?.reset();
 };
 
 const startDrag = (event: DragEvent, cardId: string) => {
-  if (event.dataTransfer !== null) {
+  if (event.dataTransfer) {
     event.dataTransfer.setData('text/plain', cardId.toString());
     event.dataTransfer.dropEffect = 'move';
   }
 };
-const onDragDrop = (event: DragEvent) => {
+const onDragDrop = async (event: DragEvent) => {
   const cardId = event?.dataTransfer?.getData('text/plain');
-  if (cardId && !listCards.value.find((c) => c.id === cardId)) {
-    const card = cardStore.cards.get(cardId);
+  if (cardId && !cards.value.find((c) => c._id === cardId)) {
+    const card = await Card.get(cardId);
     if (card) {
-      cardStore.cards.set(card.id, {
-        ...card,
-        listId: props.list.id,
-      });
+      await Card.patch(card._id, { listId: props.list._id });
       dragOverActive.value = false;
     }
   }
@@ -82,7 +80,7 @@ const onDragDrop = (event: DragEvent) => {
 
 const onDragEnter = (event: DragEvent) => {
   const cardId = event?.dataTransfer?.getData('text/plain');
-  if (cardId && !listCards.value.find((c) => c.id === cardId)) {
+  if (cardId && !cards.value.find((c) => c._id === cardId)) {
     event.preventDefault();
     dragOverActive.value = true;
   }
@@ -135,7 +133,7 @@ const onDragEnter = (event: DragEvent) => {
                       flat
                       color="red"
                       align="right"
-                      @click="listStore.deleteList(list.id)"
+                      @click="List.remove(list._id)"
                     >
                       Delete List
                     </q-btn>
@@ -147,12 +145,24 @@ const onDragEnter = (event: DragEvent) => {
         </div>
       </q-card-section>
       <q-card-section class="q-pa-none">
+        <div v-if="isPending">
+          <q-card
+            class="shadow-1 full-width"
+            v-for="i in [1, 2, 3]"
+            :key="`shadow-cards-${i}}`"
+          >
+            <q-card-section class="q-pa-sm">
+              <q-skeleton type="text" />
+            </q-card-section>
+          </q-card>
+        </div>
         <q-card
-          v-for="card in getCardsByListId(list.id)"
-          :key="card.id"
+          v-else
+          v-for="card in cards"
+          :key="card._id"
           class="q-mb-sm q-ma-sm"
           draggable="true"
-          @dragstart="startDrag($event, card.id)"
+          @dragstart="startDrag($event, card._id)"
         >
           <q-card-section class="q-pa-sm">
             {{ card.content }}
@@ -160,7 +170,7 @@ const onDragEnter = (event: DragEvent) => {
         </q-card>
         <add-button-card
           button-label="Add card"
-          :button-id="`add-card-button-list-${list.id}`"
+          :button-id="`add-card-button-list-${list._id}`"
           :padding="false"
           ref="addFormBtnRef"
           @close="resetAddCard"
@@ -171,7 +181,8 @@ const onDragEnter = (event: DragEvent) => {
             class="row items-center shadow-1 q-px-sm q-pb-sm"
           >
             <q-input
-              v-model="newListName"
+              v-model="newCard.content"
+              ref="cardInputRef"
               class="col"
               :rules="[checkRequiredString]"
             />
@@ -180,7 +191,7 @@ const onDragEnter = (event: DragEvent) => {
               icon="save"
               type="submit"
               class="q-pa-none q-ml-sm"
-              :disable="newListName === ''"
+              :disable="newCard.content === ''"
             />
           </q-form>
         </add-button-card>
