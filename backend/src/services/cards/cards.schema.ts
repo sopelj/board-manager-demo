@@ -7,7 +7,6 @@ import type { Static } from '@feathersjs/typebox';
 import type { HookContext } from '../../declarations';
 import { dataValidator, queryValidator } from '../../validators';
 import type { CardService } from './cards.class';
-import { listSchema } from '../lists/lists.schema';
 
 // Main data model schema
 export const cardSchema = Type.Object(
@@ -15,6 +14,7 @@ export const cardSchema = Type.Object(
     _id: ObjectIdSchema(),
     content: Type.String(),
     listId: Type.String(),
+    ownerId: Type.String(),
   },
   { $id: 'Card', additionalProperties: false },
 );
@@ -30,7 +30,12 @@ export const cardDataSchema = Type.Pick(cardSchema, ['content', 'listId'], {
 });
 export type CardData = Static<typeof cardDataSchema>;
 export const cardDataValidator = getValidator(cardDataSchema, dataValidator);
-export const cardDataResolver = resolve<Card, HookContext<CardService>>({});
+export const cardDataResolver = resolve<Card, HookContext<CardService>>({
+  ownerId: async (_value, _card, context) => {
+    // Associate the record with the id of the authenticated user
+    return context.params.user._id;
+  },
+});
 
 // Schema for updating existing entries
 export const cardPatchSchema = Type.Partial(cardSchema, {
