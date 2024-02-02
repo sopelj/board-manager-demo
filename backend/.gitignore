@@ -1,0 +1,6 @@
+# Others
+lib/
+data/
+node_modules/
+public/board-manager-backend-*.tgz
+!.gitkeep

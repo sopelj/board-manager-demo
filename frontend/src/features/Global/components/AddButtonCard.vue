@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { vClickOutside } from '@/features/Global/directives/click-outside';
 
 const props = withDefaults(
-  defineProps<{ buttonLabel: string; buttonId: string; padding: boolean }>(),
+  defineProps<{ buttonLabel: string; buttonId: string; padding?: boolean }>(),
   { padding: true }
 );
 const emit = defineEmits(['close', 'open']);

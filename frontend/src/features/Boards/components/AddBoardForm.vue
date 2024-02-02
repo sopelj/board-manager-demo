@@ -1,27 +1,29 @@
 <script setup lang="ts">
-import type { QField, QForm } from 'quasar';
-import type { ComponentPublicInstance } from 'vue';
+import type { QField, QForm, QInput } from 'quasar';
 import { computed, nextTick, onMounted, ref } from 'vue';
 
 import { checkRequiredString } from '@/features/Global/validation';
-import { defaultBackgroundUrl, useBoardStore } from '../stores/boards';
 import AddButtonCard from '@/features/Global/components/AddButtonCard.vue';
+import { useFeathersService } from '@/feathers-client';
 
-const boardStore = useBoardStore();
-const addButtonRef = ref<ComponentPublicInstance<typeof AddButtonCard>>();
+const defaultBackgroundUrl =
+  'https://images.unsplash.com/photo-1544604860-206456f08229?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80';
+
+const Board = useFeathersService('boards');
+const newBoard = ref(Board.new({ backgroundUrl: defaultBackgroundUrl }));
+
 const formRef = ref<QForm>();
+const nameInputRef = ref<QInput>();
 const formFields = ref<QField[]>([]);
-const boardName = ref<string>('');
-const backgroundUrl = ref<string>(defaultBackgroundUrl);
 
 const handleSubmit = () => {
-  boardStore.addBoard(boardName.value, backgroundUrl.value);
-  addButtonRef.value?.close();
+  newBoard.value.save();
+  nameInputRef.value?.focus();
+  resetForm();
 };
 
-const closeForm = () => {
-  boardName.value = '';
-  backgroundUrl.value = defaultBackgroundUrl;
+const resetForm = () => {
+  newBoard.value = Board.new({ backgroundUrl: defaultBackgroundUrl });
   formRef.value?.reset();
 };
 
@@ -39,18 +41,18 @@ const formHasErrors = computed(() =>
     <add-button-card
       button-label="Add a board..."
       button-id="add-board-btn"
-      @close="closeForm"
-      ref="addButtonRef"
+      @close="resetForm"
     >
       <q-form ref="formRef" @submit="handleSubmit">
         <q-input
-          v-model="boardName"
+          ref="nameInputRef"
+          v-model="newBoard.name"
           label="Name"
           lazy-rules
           :rules="[checkRequiredString]"
         />
         <q-input
-          v-model="backgroundUrl"
+          v-model="newBoard.backgroundUrl"
           label="Background URL"
           lazy-rules
           :rules="[checkRequiredString]"
