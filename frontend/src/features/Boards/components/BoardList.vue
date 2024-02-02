@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { useFeathers } from '@/feathers-client';
+import { useFeathersService } from '@/feathers-client';
 import AddBoardForm from './AddBoardForm.vue';
 import BoardCard from './BoardCard.vue';
 
 const router = useRouter();
-const { api } = useFeathers();
-
+const Board = useFeathersService('boards');
 const params = computed(() => ({ query: {} }));
-const { allLocalData: boards, isPending } = api
-  .service('boards')
-  .useFind(params, { paginateOn: 'hybrid' });
+const { data: boards, isPending } = Board.useFind(params, {
+  paginateOn: 'hybrid',
+});
 </script>
 
 <template>

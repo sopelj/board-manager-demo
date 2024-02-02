@@ -35,3 +35,13 @@ export const api = createPiniaClient(feathersClient, {
 export function useFeathers() {
   return { api };
 }
+
+export const useFeathersService = (
+  servicePath: string,
+  clientAlias = 'api'
+) => {
+  const clients = useFeathers();
+  const client = clients[clientAlias as keyof typeof clients];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return client.service(servicePath as any);
+};

@@ -1,22 +1,28 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import ListCard from './ListCard.vue';
-import AddListForm from './AddListForm.vue';
-import { useFeathers } from '@/feathers-client';
+import { useFeathersService } from '@/feathers-client';
+import ListCard from '@/features/Lists/components/ListCard.vue';
+import AddListForm from '@/features/Lists/components/AddListForm.vue';
 
 const route = useRoute();
-const { api } = useFeathers();
 
 const boardId = route.params.id as string;
-const { data: board, isPending: isBoardPending } = api
-  .service('boards')
-  .useGet(boardId);
+const Board = useFeathersService('boards');
+const { data: board, isPending: isBoardPending } = Board.useGet(boardId);
 
+const List = useFeathersService('lists');
 const listParams = computed(() => ({ query: { boardId } }));
-const { allLocalData: lists, isPending: isListPending } = api
-  .service('lists')
-  .useFind(listParams, { paginateOn: 'hybrid' });
+const { data: lists, isPending: isListPending } = List.useFind(listParams, {
+  paginateOn: 'hybrid',
+});
+
+const backgroundStyle = computed((): string => {
+  if (board.value?.backgroundUrl) {
+    return `background-image: url(${board.value.backgroundUrl})`;
+  }
+  return '';
+});
 </script>
 
 <template>
@@ -27,15 +33,7 @@ const { allLocalData: lists, isPending: isListPending } = api
       <template v-else>{{ board?.name }}</template>
     </q-toolbar-title>
   </q-toolbar>
-  <q-page
-    padding
-    class="board-page"
-    :style="
-      board?.backgroundUrl
-        ? `background-image: url(${board.backgroundUrl})`
-        : ''
-    "
-  >
+  <q-page padding class="board-page" :style="backgroundStyle">
     <div class="row items-start q-col-gutter-md">
       <template v-if="isListPending">
         <div

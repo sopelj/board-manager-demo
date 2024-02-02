@@ -1,36 +1,22 @@
 <script setup lang="ts">
-import type { QForm } from 'quasar';
-
 import { storeToRefs } from 'pinia';
 import { colors } from 'quasar';
 import { computed, ref } from 'vue';
 
-import { checkRequiredString } from '@/features/Global/validation';
-import AddButtonCard from '@/features/Global/components/AddButtonCard.vue';
-
-import UserAvatar from '@/features/Auth/components/UserAvatar.vue';
 import { useUserStore } from '@/features/Auth/stores/user';
 import { formatTimeSince } from '@/features/Dates/datetime';
 import { User } from '@/features/Auth/types';
-import { useFeathers } from '@/feathers-client';
+import { useFeathersService } from '@/feathers-client';
+import UserAvatar from '@/features/Auth/components/UserAvatar.vue';
+import CardList from '@/features/Cards/components/CardList.vue';
 
 const userStore = useUserStore();
 const { users } = storeToRefs(userStore);
-const { api } = useFeathers();
 
-const List = api.service('lists');
-const Card = api.service('cards');
+const List = useFeathersService('lists');
+const Card = useFeathersService('cards');
 const props = defineProps<{ list }>();
 
-const newCard = ref(Card.new());
-const cardParams = computed(() => ({ query: { listId: props.list._id } }));
-const { allLocalData: cards, isPending } = Card.useFind(cardParams, {
-  paginateOn: 'hybrid',
-});
-
-const addFormRef = ref<QForm>();
-const cardInputRef = ref();
-const addFormBtnRef = ref<InstanceType<typeof AddButtonCard>>();
 const dragOverActive = ref<boolean>(false);
 
 const headerStyle = computed(() => {
@@ -49,38 +35,19 @@ const owner = computed((): User | undefined =>
   users.value.get(props.list.ownerId)
 );
 
-const addCard = () => {
-  newCard.value.listId = props.list._id;
-  newCard.value.save();
-  resetAddCard();
-  cardInputRef.value.focus();
-};
-
-const resetAddCard = () => {
-  newCard.value = Card.new();
-  addFormRef.value?.reset();
-};
-
-const startDrag = (event: DragEvent, cardId: string) => {
-  if (event.dataTransfer) {
-    event.dataTransfer.setData('text/plain', cardId.toString());
-    event.dataTransfer.dropEffect = 'move';
-  }
-};
 const onDragDrop = async (event: DragEvent) => {
   const cardId = event?.dataTransfer?.getData('text/plain');
-  if (cardId && !cards.value.find((c) => c._id === cardId)) {
-    const card = await Card.get(cardId);
-    if (card) {
-      await Card.patch(card._id, { listId: props.list._id });
-      dragOverActive.value = false;
-    }
+  const findQuery = { query: { _id: cardId, listId: { $ne: props.list._id } } };
+  if (cardId && (await Card.findOneInStore(findQuery)).value) {
+    await Card.patch(cardId, { listId: props.list._id });
+    dragOverActive.value = false;
   }
 };
 
-const onDragEnter = (event: DragEvent) => {
+const onDragEnter = async (event: DragEvent) => {
   const cardId = event?.dataTransfer?.getData('text/plain');
-  if (cardId && !cards.value.find((c) => c._id === cardId)) {
+  const findQuery = { query: { _id: cardId, listId: { $ne: props.list._id } } };
+  if (cardId && (await Card.findOneInStore(findQuery)).value) {
     event.preventDefault();
     dragOverActive.value = true;
   }
@@ -145,56 +112,7 @@ const onDragEnter = (event: DragEvent) => {
         </div>
       </q-card-section>
       <q-card-section class="q-pa-none">
-        <div v-if="isPending">
-          <q-card
-            class="shadow-1 full-width"
-            v-for="i in [1, 2, 3]"
-            :key="`shadow-cards-${i}}`"
-          >
-            <q-card-section class="q-pa-sm">
-              <q-skeleton type="text" />
-            </q-card-section>
-          </q-card>
-        </div>
-        <q-card
-          v-else
-          v-for="card in cards"
-          :key="card._id"
-          class="q-mb-sm q-ma-sm"
-          draggable="true"
-          @dragstart="startDrag($event, card._id)"
-        >
-          <q-card-section class="q-pa-sm">
-            {{ card.content }}
-          </q-card-section>
-        </q-card>
-        <add-button-card
-          button-label="Add card"
-          :button-id="`add-card-button-list-${list._id}`"
-          :padding="false"
-          ref="addFormBtnRef"
-          @close="resetAddCard"
-        >
-          <q-form
-            @submit="addCard"
-            ref="addFormRef"
-            class="row items-center shadow-1 q-px-sm q-pb-sm"
-          >
-            <q-input
-              v-model="newCard.content"
-              ref="cardInputRef"
-              class="col"
-              :rules="[checkRequiredString]"
-            />
-            <q-btn
-              flat
-              icon="save"
-              type="submit"
-              class="q-pa-none q-ml-sm"
-              :disable="newCard.content === ''"
-            />
-          </q-form>
-        </add-button-card>
+        <card-list :list-id="list._id" />
       </q-card-section>
     </q-card>
   </div>

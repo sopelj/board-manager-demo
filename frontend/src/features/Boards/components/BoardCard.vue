@@ -5,10 +5,10 @@ import { computed } from 'vue';
 import UserAvatar from '@/features/Auth/components/UserAvatar.vue';
 import { useUserStore } from '@/features/Auth/stores/user';
 import { formatTimeSince } from '@/features/Dates/datetime';
-import { useFeathers } from '@/feathers-client';
+import { useFeathersService } from '@/feathers-client';
 const props = defineProps<{ board }>();
 
-const { api } = useFeathers();
+const Board = useFeathersService('boards');
 const userStore = useUserStore();
 const { user, users } = storeToRefs(userStore);
 
@@ -42,7 +42,7 @@ const ownerName = computed(() =>
           round
           color="red"
           icon="delete"
-          @click.stop="api.service('boards').remove(props.board._id)"
+          @click.stop="Board.remove(props.board._id)"
         />
       </q-card-section>
     </q-card>

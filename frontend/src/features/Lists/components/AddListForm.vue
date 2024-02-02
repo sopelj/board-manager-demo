@@ -3,17 +3,16 @@ import type { QInput } from 'quasar';
 import { ref } from 'vue';
 import { checkRequiredString } from '@/features/Global/validation';
 import AddButtonCard from '@/features/Global/components/AddButtonCard.vue';
-import { useFeathers } from '@/feathers-client';
+import { useFeathersService } from '@/feathers-client';
 
 const props = defineProps<{ boardId: string }>();
 
-const { api } = useFeathers();
 const defaultColor = '#e0e0e0';
 
 const addFormRef = ref<InstanceType<typeof AddButtonCard>>();
 const nameInputRef = ref<QInput>();
 
-const List = api.service('lists');
+const List = useFeathersService('lists');
 const newList = ref(List.new({ color: defaultColor }));
 
 const handleSubmit = () => {

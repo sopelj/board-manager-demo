@@ -4,16 +4,14 @@ import { computed, nextTick, onMounted, ref } from 'vue';
 
 import { checkRequiredString } from '@/features/Global/validation';
 import AddButtonCard from '@/features/Global/components/AddButtonCard.vue';
-import { useFeathers } from '@/feathers-client';
+import { useFeathersService } from '@/feathers-client';
 
 const defaultBackgroundUrl =
   'https://images.unsplash.com/photo-1544604860-206456f08229?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80';
 
-const { api } = useFeathers();
-const Board = api.service('boards');
+const Board = useFeathersService('boards');
 const newBoard = ref(Board.new({ backgroundUrl: defaultBackgroundUrl }));
 
-const addButtonRef = ref<InstanceType<typeof AddButtonCard>>();
 const formRef = ref<QForm>();
 const nameInputRef = ref<QInput>();
 const formFields = ref<QField[]>([]);
@@ -21,9 +19,10 @@ const formFields = ref<QField[]>([]);
 const handleSubmit = () => {
   newBoard.value.save();
   nameInputRef.value?.focus();
+  resetForm();
 };
 
-const closeForm = () => {
+const resetForm = () => {
   newBoard.value = Board.new({ backgroundUrl: defaultBackgroundUrl });
   formRef.value?.reset();
 };
@@ -42,8 +41,7 @@ const formHasErrors = computed(() =>
     <add-button-card
       button-label="Add a board..."
       button-id="add-board-btn"
-      @close="closeForm"
-      ref="addButtonRef"
+      @close="resetForm"
     >
       <q-form ref="formRef" @submit="handleSubmit">
         <q-input
