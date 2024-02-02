@@ -22,11 +22,9 @@
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from 'pinia';
-import { useUserStore } from '@/features/Auth/stores/user';
 import quasarLogoUrl from '@/assets/images/logos/quasar.svg';
 import BoardList from '@/features/Boards/components/BoardList.vue';
+import { useAuthStore } from '@/features/Auth/store';
 
-const userStore = useUserStore();
-const { isAuthenticated } = storeToRefs(userStore);
+const { isAuthenticated } = useAuthStore();
 </script>

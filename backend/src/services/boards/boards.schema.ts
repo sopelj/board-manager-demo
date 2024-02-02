@@ -1,5 +1,5 @@
 // // For more information about this file see https://dove.feathersjs.com/guides/cli/service.schemas.html
-import { resolve } from '@feathersjs/schema';
+import { resolve, virtual } from '@feathersjs/schema';
 import { Type, getValidator, querySyntax } from '@feathersjs/typebox';
 import { ObjectIdSchema } from '@feathersjs/typebox';
 import type { Static } from '@feathersjs/typebox';
@@ -7,6 +7,7 @@ import type { Static } from '@feathersjs/typebox';
 import type { HookContext } from '../../declarations';
 import { dataValidator, queryValidator } from '../../validators';
 import type { BoardService } from './boards.class';
+import { userSchema } from '../users/users.schema';
 
 // Main data model schema
 export const boardSchema = Type.Object(
@@ -15,13 +16,18 @@ export const boardSchema = Type.Object(
     name: Type.String({ minLength: 1 }),
     backgroundUrl: Type.String({ minLength: 1 }),
     ownerId: Type.String(),
+    owner: Type.Ref(userSchema),
     created: Type.Number(),
   },
   { $id: 'Board', additionalProperties: false },
 );
 export type Board = Static<typeof boardSchema>;
 export const boardValidator = getValidator(boardSchema, dataValidator);
-export const boardResolver = resolve<Board, HookContext<BoardService>>({});
+export const boardResolver = resolve<Board, HookContext<BoardService>>({
+  owner: virtual(async (board, context) => {
+    return context.app.service('users').get(board.ownerId);
+  }),
+});
 
 export const boardExternalResolver = resolve<Board, HookContext<BoardService>>({});
 
@@ -34,8 +40,7 @@ export const boardDataValidator = getValidator(boardDataSchema, dataValidator);
 export const boardDataResolver = resolve<Board, HookContext<BoardService>>({
   ownerId: async (_value, _board, context) => {
     // Associate the record with the id of the authenticated user
-    // return context.params.user.id;
-    return '9d4dd4b8-47f9-4cfd-98f4-bba4fc27f545'; // Test user ID from auth
+    return context.params.user._id;
   },
   created: async () => {
     return Date.now();
