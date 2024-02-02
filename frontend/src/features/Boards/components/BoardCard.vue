@@ -1,21 +1,18 @@
 <script setup lang="ts">
-import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
-
 import UserAvatar from '@/features/Auth/components/UserAvatar.vue';
-import { useUserStore } from '@/features/Auth/stores/user';
 import { formatTimeSince } from '@/features/Dates/datetime';
 import { useFeathersService } from '@/feathers-client';
+import { computed } from 'vue';
+import { useAuthStore } from '@/features/Auth/store';
 const props = defineProps<{ board }>();
 
+const auth = useAuthStore();
 const Board = useFeathersService('boards');
-const userStore = useUserStore();
-const { user, users } = storeToRefs(userStore);
 
-const owner = computed(() => users.value.get(props.board.ownerId));
-const ownerName = computed(() =>
-  user.value?.id === owner.value?.id ? 'you' : user.value?.displayName
-);
+const ownerName = computed(() => {
+  const owner = props.board.owner;
+  return owner._id === auth.user._id ? 'You' : owner.displayName;
+});
 </script>
 
 <template>
@@ -29,7 +26,7 @@ const ownerName = computed(() =>
       <q-card-section class="q-pa-sm row vertical-middle">
         <div class="col flex items-center vertical-middle">
           <user-avatar
-            :user="owner"
+            :user="board.owner"
             :size="20"
             style="font-size: 1.5em"
             class="q-mr-sm"

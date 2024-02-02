@@ -16,6 +16,7 @@ import {
 import type { Application } from '../../declarations';
 import { CardService, getOptions } from './cards.class';
 import { cardPath, cardMethods } from './cards.shared';
+import { authenticate } from '@feathersjs/authentication';
 
 export * from './cards.class';
 export * from './cards.schema';
@@ -32,7 +33,11 @@ export const card = (app: Application) => {
   // Initialize hooks
   app.service(cardPath).hooks({
     around: {
-      all: [schemaHooks.resolveExternal(cardExternalResolver), schemaHooks.resolveResult(cardResolver)],
+      all: [
+        authenticate('jwt'),
+        schemaHooks.resolveExternal(cardExternalResolver),
+        schemaHooks.resolveResult(cardResolver),
+      ],
     },
     before: {
       all: [schemaHooks.validateQuery(cardQueryValidator), schemaHooks.resolveQuery(cardQueryResolver)],
