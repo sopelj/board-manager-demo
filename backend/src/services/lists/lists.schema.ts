@@ -7,6 +7,7 @@ import type { Static } from '@feathersjs/typebox';
 import type { HookContext } from '../../declarations';
 import { dataValidator, queryValidator } from '../../validators';
 import type { ListService } from './lists.class';
+import { userSchema } from '../users/users.schema';
 
 // Main data model schema
 export const listSchema = Type.Object(
@@ -16,6 +17,7 @@ export const listSchema = Type.Object(
     color: Type.String({ pattern: '#[a-f0-9]{6}' }),
     boardId: Type.String(),
     ownerId: Type.String(),
+    owner: Type.Ref(userSchema),
     created: Type.Number(),
   },
   { $id: 'List', additionalProperties: false },
@@ -23,7 +25,11 @@ export const listSchema = Type.Object(
 
 export type List = Static<typeof listSchema>;
 export const listValidator = getValidator(listSchema, dataValidator);
-export const listResolver = resolve<List, HookContext<ListService>>({});
+export const listResolver = resolve<List, HookContext<ListService>>({
+  owner: virtual(async (list, context) => {
+    return context.app.service('users').get(list.ownerId);
+  }),
+});
 
 export const listExternalResolver = resolve<List, HookContext<ListService>>({});
 
@@ -36,8 +42,7 @@ export const listDataValidator = getValidator(listDataSchema, dataValidator);
 export const listDataResolver = resolve<List, HookContext<ListService>>({
   ownerId: async (_value, _list, context) => {
     // Associate the record with the id of the authenticated user
-    // return context.params.user.id;
-    return '9d4dd4b8-47f9-4cfd-98f4-bba4fc27f545'; // Test user ID from auth
+    return context.params.user._id;
   },
   created: async () => {
     return Date.now();

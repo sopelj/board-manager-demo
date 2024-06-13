@@ -17,6 +17,7 @@ import type { Application } from '../../declarations';
 import { ListService, getOptions } from './lists.class';
 import { listPath, listMethods } from './lists.shared';
 import { afterListRemove } from './lists.hooks';
+import { authenticate } from '@feathersjs/authentication';
 
 export * from './lists.class';
 export * from './lists.schema';
@@ -33,7 +34,11 @@ export const list = (app: Application) => {
   // Initialize hooks
   app.service(listPath).hooks({
     around: {
-      all: [schemaHooks.resolveExternal(listExternalResolver), schemaHooks.resolveResult(listResolver)],
+      all: [
+        authenticate('jwt'),
+        schemaHooks.resolveExternal(listExternalResolver),
+        schemaHooks.resolveResult(listResolver),
+      ],
     },
     before: {
       all: [schemaHooks.validateQuery(listQueryValidator), schemaHooks.resolveQuery(listQueryResolver)],

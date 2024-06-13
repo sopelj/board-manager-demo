@@ -1,18 +1,14 @@
 <script setup lang="ts">
-import { storeToRefs } from 'pinia';
 import { colors } from 'quasar';
 import { computed, ref } from 'vue';
 
-import { useUserStore } from '@/features/Auth/stores/user';
 import { formatTimeSince } from '@/features/Dates/datetime';
-import { User } from '@/features/Auth/types';
 import { useFeathersService } from '@/feathers-client';
 import UserAvatar from '@/features/Auth/components/UserAvatar.vue';
 import CardList from '@/features/Cards/components/CardList.vue';
+import { useAuthStore } from '@/features/Auth/store';
 
-const userStore = useUserStore();
-const { users } = storeToRefs(userStore);
-
+const auth = useAuthStore();
 const List = useFeathersService('lists');
 const Card = useFeathersService('cards');
 const props = defineProps<{ list }>();
@@ -25,15 +21,17 @@ const headerStyle = computed(() => {
   return `background-color: ${bgColor}; color: ${textColor}`;
 });
 
+const ownerName = computed(() => {
+  const owner = props.list.owner;
+  return owner._id === auth.user._id ? 'You' : owner.displayName;
+});
+
 const listColor = computed({
   get: () => props.list.color,
   set: (val) => {
     List.patch(props.list._id, { color: val });
   },
 });
-const owner = computed((): User | undefined =>
-  users.value.get(props.list.ownerId)
-);
 
 const onDragDrop = async (event: DragEvent) => {
   const cardId = event?.dataTransfer?.getData('text/plain');
@@ -69,9 +67,9 @@ const onDragEnter = async (event: DragEvent) => {
             <q-menu anchor="top right" self="top left">
               <q-list style="min-width: 100px">
                 <q-item>
-                  <user-avatar :user="owner" />
+                  <user-avatar :user="list.owner" />
                   <q-item-section class="q-ml-sm">
-                    {{ owner?.displayName }}
+                    {{ ownerName }}
                     <div class="text-grey-7">
                       {{ formatTimeSince(list.created) }}
                     </div>

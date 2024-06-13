@@ -3,8 +3,8 @@
     <q-header elevated>
       <q-toolbar>
         <q-toolbar-title>Board Manager</q-toolbar-title>
-        <div v-if="user">
-          <user-avatar :user="user" :size="80">
+        <div v-if="auth.isAuthenticated">
+          <user-avatar :user="auth.user" :size="80">
             <q-menu auto-close>
               <q-list>
                 <q-item clickable v-close-popup>
@@ -23,31 +23,30 @@
       </q-toolbar>
     </q-header>
     <q-page-container>
-      <router-view />
+      <q-circular-progress v-if="!auth.isInitDone">Loading</q-circular-progress>
+      <router-view v-else />
     </q-page-container>
   </q-layout>
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
-import { useUserStore } from 'src/features/Auth/stores/user';
 import { useQuasar } from 'quasar';
+import { useAuthStore } from '@/features/Auth/store';
 import UserAvatar from 'src/features/Auth/components/UserAvatar.vue';
 
 const $q = useQuasar();
 const router = useRouter();
-const userStore = useUserStore();
-const { user } = storeToRefs(userStore);
+const auth = useAuthStore();
 
-const handleLogout = () => {
-  userStore.user = undefined;
+const handleLogout = async () => {
+  await auth.logout();
   $q.notify({
     color: 'green-4',
     textColor: 'white',
     icon: 'logout',
     message: 'Logged out!',
   });
-  router.push({ name: 'index' });
+  await router.push({ name: 'index' });
 };
 </script>

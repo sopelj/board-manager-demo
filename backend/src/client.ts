@@ -4,6 +4,9 @@ import type { TransportConnection, Application } from '@feathersjs/feathers';
 import authenticationClient from '@feathersjs/authentication-client';
 import type { AuthenticationClientOptions } from '@feathersjs/authentication-client';
 
+import { userClient } from './services/users/users.shared';
+export type { User, UserData, UserQuery, UserPatch } from './services/users/users.shared';
+
 import { cardClient } from './services/cards/cards.shared';
 export type { Card, CardData, CardQuery, CardPatch } from './services/cards/cards.shared';
 
@@ -42,5 +45,6 @@ export const createClient = <Configuration = any>(
   client.configure(boardClient);
   client.configure(listClient);
   client.configure(cardClient);
+  client.configure(userClient);
   return client;
 };

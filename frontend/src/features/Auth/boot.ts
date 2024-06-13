@@ -1,22 +1,22 @@
 import { boot } from 'quasar/wrappers';
-import { useUserStore } from './stores/user';
+import { useAuthStore } from '@/features/Auth/store';
+
+const publicRoutes = ['index', 'auth-login', 'auth-signup'];
 
 export default boot(async ({ router }) => {
   /**
    * Check for authentication before each route.
    */
-  router.beforeEach((to, from, next) => {
-    const userStore = useUserStore();
-    if (
-      !userStore.isAuthenticated &&
-      to.name !== 'index' &&
-      to.name !== 'auth-login' &&
-      to.name !== 'auth-signup'
-    ) {
-      return next({
-        name: 'auth-login',
-        query: { next: to.fullPath },
-      });
+  router.beforeEach(async (to, from, next) => {
+    const authStore = useAuthStore();
+
+    // always resolves. no need to catch
+    await authStore.getPromise();
+
+    // check auth and apply login redirect
+    if (!authStore.user && !publicRoutes.includes(to.name as string)) {
+      authStore.loginRedirect = to;
+      return next({ name: 'auth-login' });
     }
     return next();
   });

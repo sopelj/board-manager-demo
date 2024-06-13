@@ -3,29 +3,39 @@ import { useQuasar } from 'quasar';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { checkRequiredString, checkEmail } from '@/features/Global/validation';
+import { useAuthStore } from '@/features/Auth/store';
+import { useFeathersService } from '@/feathers-client';
 
 const $q = useQuasar();
 const router = useRouter();
 
-const email = ref<string>('');
-const displayName = ref<string>('');
-const username = ref<string>('');
-const password = ref<string>('');
+const User = useFeathersService('users');
+const authStore = useAuthStore();
+
+const newUser = ref(User.new());
 const confirmPassword = ref<string>('');
 const isPasswordVisible = ref<boolean>(false);
 
 const checkPasswordConfirmation = (val: string | null) =>
-  val === password.value || 'Passwords do not match';
+  val === newUser.value.password || 'Passwords do not match';
 
-const handleSignup = () => {
-  // TODO: Actually create account when backend exists.
+const handleSignup = async () => {
+  await newUser.value.create();
+  const { email, password } = newUser.value;
+  authStore.clearError();
+  await authStore.authenticate({ strategy: 'local', email, password });
+  newUser.value = User.new();
+
   $q.notify({
     color: 'green-4',
     textColor: 'white',
     icon: 'person_add',
-    message: 'Account created. Please login.',
+    message: 'Account created!',
   });
-  router.push({ name: 'auth-login' });
+
+  const redirectTo = authStore.loginRedirect || '/';
+  authStore.loginRedirect = null;
+  await router.push(redirectTo);
 };
 </script>
 
@@ -35,27 +45,20 @@ const handleSignup = () => {
       <q-form @submit="handleSignup" class="q-gutter-md q-pa-md">
         <h1 class="text-h4 text-center">Create an account</h1>
         <q-input
-          v-model="username"
-          label="Username *"
-          autocapitalize="off"
-          lazy-rules
-          :rules="[checkRequiredString]"
-        />
-        <q-input
-          v-model="displayName"
+          v-model="newUser.displayName"
           label="Display Name *"
           lazy-rules
           :rules="[checkRequiredString]"
         />
         <q-input
-          v-model="email"
+          v-model="newUser.email"
           label="Email *"
           lazy-rules
           type="email"
           :rules="[checkRequiredString, checkEmail]"
         />
         <q-input
-          v-model="password"
+          v-model="newUser.password"
           label="Password *"
           :type="isPasswordVisible ? 'text' : 'password'"
           lazy-rules
@@ -76,6 +79,9 @@ const handleSignup = () => {
           lazy-rules
           :rules="[checkRequiredString, checkPasswordConfirmation]"
         />
+        <div v-if="authStore.error">
+          {{ authStore.error?.message }}
+        </div>
         <div class="row flex-center">
           <q-btn
             label="Sign up"

@@ -17,6 +17,7 @@ import type { Application } from '../../declarations';
 import { BoardService, getOptions } from './boards.class';
 import { boardPath, boardMethods } from './boards.shared';
 import { afterBoardRemove } from './boards.hooks';
+import { authenticate } from '@feathersjs/authentication';
 
 export * from './boards.class';
 export * from './boards.schema';
@@ -33,7 +34,11 @@ export const board = (app: Application) => {
   // Initialize hooks
   app.service(boardPath).hooks({
     around: {
-      all: [schemaHooks.resolveExternal(boardExternalResolver), schemaHooks.resolveResult(boardResolver)],
+      all: [
+        authenticate('jwt'),
+        schemaHooks.resolveExternal(boardExternalResolver),
+        schemaHooks.resolveResult(boardResolver),
+      ],
     },
     before: {
       all: [schemaHooks.validateQuery(boardQueryValidator), schemaHooks.resolveQuery(boardQueryResolver)],
