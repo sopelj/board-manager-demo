@@ -1,0 +1,13 @@
+{
+  "host": "localhost",
+  "port": 3030,
+  "public": "./public/",
+  "origins": [
+    "http://localhost:3030"
+  ],
+  "paginate": {
+    "default": 999,
+    "max": 999
+  },
+  "mongodb": "mongodb://127.0.0.1:27017/backend"
+}

@@ -1,34 +1,22 @@
 <script setup lang="ts">
-import type { QForm } from 'quasar';
-import type { ComponentPublicInstance } from 'vue';
-import type { Card, List } from '../types';
-
 import { storeToRefs } from 'pinia';
 import { colors } from 'quasar';
 import { computed, ref } from 'vue';
 
-import { checkRequiredString } from '@/features/Global/validation';
-import AddButtonCard from '@/features/Global/components/AddButtonCard.vue';
-
-import { useCardStore } from '../stores/cards';
-import { useListStore } from '../stores/lists';
-import UserAvatar from '@/features/Auth/components/UserAvatar.vue';
 import { useUserStore } from '@/features/Auth/stores/user';
 import { formatTimeSince } from '@/features/Dates/datetime';
 import { User } from '@/features/Auth/types';
-
-const props = defineProps<{ list: List }>();
+import { useFeathersService } from '@/feathers-client';
+import UserAvatar from '@/features/Auth/components/UserAvatar.vue';
+import CardList from '@/features/Cards/components/CardList.vue';
 
 const userStore = useUserStore();
-const cardStore = useCardStore();
-const listStore = useListStore();
-
 const { users } = storeToRefs(userStore);
-const { getCardsByListId } = storeToRefs(cardStore);
 
-const addFormRef = ref<QForm>();
-const addFormBtnRef = ref<ComponentPublicInstance<typeof AddButtonCard>>();
-const newListName = ref<string>('');
+const List = useFeathersService('lists');
+const Card = useFeathersService('cards');
+const props = defineProps<{ list }>();
+
 const dragOverActive = ref<boolean>(false);
 
 const headerStyle = computed(() => {
@@ -36,53 +24,30 @@ const headerStyle = computed(() => {
   const textColor = colors.luminosity(bgColor) >= 0.5 ? 'black' : 'white';
   return `background-color: ${bgColor}; color: ${textColor}`;
 });
+
 const listColor = computed({
   get: () => props.list.color,
   set: (val) => {
-    listStore.lists.set(props.list.id, {
-      ...props.list,
-      color: val,
-    });
+    List.patch(props.list._id, { color: val });
   },
 });
 const owner = computed((): User | undefined =>
   users.value.get(props.list.ownerId)
 );
-const listCards = computed((): Card[] => getCardsByListId.value(props.list.id));
 
-const addCard = () => {
-  cardStore.addCard(newListName.value as string, props.list.id);
-  resetAddCard();
-};
-
-const resetAddCard = () => {
-  newListName.value = '';
-  addFormRef.value?.reset();
-};
-
-const startDrag = (event: DragEvent, cardId: string) => {
-  if (event.dataTransfer !== null) {
-    event.dataTransfer.setData('text/plain', cardId.toString());
-    event.dataTransfer.dropEffect = 'move';
-  }
-};
-const onDragDrop = (event: DragEvent) => {
+const onDragDrop = async (event: DragEvent) => {
   const cardId = event?.dataTransfer?.getData('text/plain');
-  if (cardId && !listCards.value.find((c) => c.id === cardId)) {
-    const card = cardStore.cards.get(cardId);
-    if (card) {
-      cardStore.cards.set(card.id, {
-        ...card,
-        listId: props.list.id,
-      });
-      dragOverActive.value = false;
-    }
+  const findQuery = { query: { _id: cardId, listId: { $ne: props.list._id } } };
+  if (cardId && (await Card.findOneInStore(findQuery)).value) {
+    await Card.patch(cardId, { listId: props.list._id });
+    dragOverActive.value = false;
   }
 };
 
-const onDragEnter = (event: DragEvent) => {
+const onDragEnter = async (event: DragEvent) => {
   const cardId = event?.dataTransfer?.getData('text/plain');
-  if (cardId && !listCards.value.find((c) => c.id === cardId)) {
+  const findQuery = { query: { _id: cardId, listId: { $ne: props.list._id } } };
+  if (cardId && (await Card.findOneInStore(findQuery)).value) {
     event.preventDefault();
     dragOverActive.value = true;
   }
@@ -135,7 +100,7 @@ const onDragEnter = (event: DragEvent) => {
                       flat
                       color="red"
                       align="right"
-                      @click="listStore.deleteList(list.id)"
+                      @click="List.remove(list._id)"
                     >
                       Delete List
                     </q-btn>
@@ -147,43 +112,7 @@ const onDragEnter = (event: DragEvent) => {
         </div>
       </q-card-section>
       <q-card-section class="q-pa-none">
-        <q-card
-          v-for="card in getCardsByListId(list.id)"
-          :key="card.id"
-          class="q-mb-sm q-ma-sm"
-          draggable="true"
-          @dragstart="startDrag($event, card.id)"
-        >
-          <q-card-section class="q-pa-sm">
-            {{ card.content }}
-          </q-card-section>
-        </q-card>
-        <add-button-card
-          button-label="Add card"
-          :button-id="`add-card-button-list-${list.id}`"
-          :padding="false"
-          ref="addFormBtnRef"
-          @close="resetAddCard"
-        >
-          <q-form
-            @submit="addCard"
-            ref="addFormRef"
-            class="row items-center shadow-1 q-px-sm q-pb-sm"
-          >
-            <q-input
-              v-model="newListName"
-              class="col"
-              :rules="[checkRequiredString]"
-            />
-            <q-btn
-              flat
-              icon="save"
-              type="submit"
-              class="q-pa-none q-ml-sm"
-              :disable="newListName === ''"
-            />
-          </q-form>
-        </add-button-card>
+        <card-list :list-id="list._id" />
       </q-card-section>
     </q-card>
   </div>

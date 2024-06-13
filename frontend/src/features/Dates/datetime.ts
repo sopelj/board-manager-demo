@@ -7,9 +7,9 @@ const TIME_SPANS: readonly [number, Intl.RelativeTimeFormatUnit][] = [
   [12, 'months'],
 ];
 
-export const formatTimeSince = (date: Date) => {
+export const formatTimeSince = (date: number) => {
   const timeFormatter = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
-  let duration = (date.getTime() - new Date().getTime()) / 1000;
+  let duration = (date - new Date().getTime()) / 1000;
   for (const [amount, span] of TIME_SPANS) {
     if (Math.abs(duration) < amount) {
       return timeFormatter.format(Math.round(duration), span);
