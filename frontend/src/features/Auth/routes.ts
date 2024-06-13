@@ -6,12 +6,12 @@ export default [
       {
         name: 'auth-login',
         path: '/login',
-        component: () => import('./pages/LoginPage.vue'),
+        component: () => import('./components/LoginPage.vue'),
       },
       {
         name: 'auth-signup',
         path: '/signup',
-        component: () => import('./pages/SignupPage.vue'),
+        component: () => import('./components/SignupPage.vue'),
       },
     ],
   },

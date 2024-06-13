@@ -1,5 +1,6 @@
+import type { Board } from '../types';
+import { uid } from 'quasar';
 import { defineStore } from 'pinia';
-import { Board } from '../types';
 import { useUserStore } from '@/features/Auth/stores/user';
 
 export const defaultBackgroundUrl =
@@ -7,31 +8,29 @@ export const defaultBackgroundUrl =
 
 export const useBoardStore = defineStore('boards', {
   state: () => ({
-    boards: <Board[]>[
-      {
-        id: 1,
-        name: 'My board',
-        backgroundUrl: defaultBackgroundUrl,
-        ownerId: 2,
-        created: new Date(2023, 4, 1),
-      },
-      {
-        id: 2,
-        name: 'Another board',
-        backgroundUrl: defaultBackgroundUrl,
-        ownerId: 1,
-        created: new Date(2024, 0, 5),
-      },
-    ],
+    boards: new Map([
+      [
+        'f950e33f-2cd9-48e7-bd3f-e1a0c2072466',
+        {
+          id: 'f950e33f-2cd9-48e7-bd3f-e1a0c2072466',
+          name: 'My board',
+          backgroundUrl: defaultBackgroundUrl,
+          ownerId: 'a41c6b62-54e5-4463-a4df-4b8b5eb8f50c',
+          created: new Date(2023, 4, 1),
+        },
+      ],
+      [
+        '2e653d6f-292c-4d3a-95f3-a104d12aabd3',
+        {
+          id: '2e653d6f-292c-4d3a-95f3-a104d12aabd3',
+          name: 'Another board',
+          backgroundUrl: defaultBackgroundUrl,
+          ownerId: '9d4dd4b8-47f9-4cfd-98f4-bba4fc27f545',
+          created: new Date(2024, 0, 5),
+        },
+      ],
+    ]) as Map<string, Board>,
   }),
-  getters: {
-    getBoardById({ boards }): (id: number) => Board | undefined {
-      return (id: number) => boards.find((b) => b.id === id);
-    },
-    highestBoardId({ boards }): number {
-      return Math.max(...boards.map((b) => b.id));
-    },
-  },
   actions: {
     addBoard(name: string, backgroundUrl: string): Board {
       const userStore = useUserStore();
@@ -41,11 +40,11 @@ export const useBoardStore = defineStore('boards', {
       const newBoard = {
         name,
         backgroundUrl,
-        id: this.highestBoardId + 1,
+        id: uid(),
         ownerId: userStore.user.id,
         created: new Date(),
       };
-      this.boards.push(newBoard);
+      this.boards.set(newBoard.id, newBoard);
       return newBoard;
     },
   },
